@@ -1,0 +1,15 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-6 col-sm-8 col-md-6 col-lg-4">
+            <h2 class="text-info">You've been logged out</h2>
+            <div class="border-top pt-3">
+                <small class="text-muted">
+                    <a class="text-dark text-decoration-underline" href="{% url 'login' %}">Log in again</a>
+                </small>
+            </div>
+        </div> 
+    </div>
+</div>         
+{% endblock %}

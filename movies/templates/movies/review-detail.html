@@ -1,0 +1,162 @@
+{% extends 'movies/base.html' %}
+{% load crispy_forms_tags %}
+{% block nav_link_reviews %} active {% endblock nav_link_reviews %}
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 mb-5">
+                <div class="d-flex justify-content-center align-items-stretch">
+                    <div class="card shadow my-3 w-100">
+                        {% if movie.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path }}" style="width:100%;height:55vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center border-bottom">
+                                <div class="mb-2"> 
+                                    <i class="text-warning bi bi-star-fill"></i>
+                                    <span>{{ movie.vote_average|floatformat }}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-people-fill"></i>
+                                    <span>
+                                        {{ movie.vote_count }}
+                                    </span>
+                                </div>
+                            </div>
+                            <h5 class="mt-2 card-title">
+                                <a class="text-dark" href={% url 'movie-detail' movie.id movie.original_title|slugify %}>
+                                    {{ movie.original_title }}
+                                </a>    
+                            </h5>
+                            <p class="card-text mt-auto">
+                                {% for genre in movie.genre.all %}
+                                    <span class="badge bg-info">{{ genre.name }}</span>
+                                {% endfor %}
+                            </p>
+                            <p class="mt-auto card-text"><small class="text-muted">Release Date: {{ movie.release_date }}</small></p>
+                        </div>
+                        <div class="card-footer">
+                            {% if not user.is_authenticated %}
+                                <div class="my-2">
+                                    {% if not movie.trailer %}
+                                        <div class="col-lg-12">
+                                            <a href="https://www.google.com/search?q={{ movie.original_title }}" target="_blank" class="btn btn-primary w-100 mt-auto">
+                                                Google It
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="col-lg-12">
+                                            <div>
+                                                <a href="https://www.youtube.com/watch?v={{ movie.trailer }}" target="_blank" class="btn btn-danger w-100 mt-auto">
+                                                    <i class="text-light bi bi-youtube"></i>
+                                                    Watch the trailer
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="container my-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        {% if not movie.trailer %}
+                                            <div>
+                                                <a href="https://www.google.com/search?q={{ movie.original_title }}" target="_blank" class="btn w-100 mt-auto">
+                                                    <i class="h3 bi bi-google"></i>
+                                                </a>
+                                            </div>
+                                        {% else %}
+                                            <div>
+                                                <a href="https://www.youtube.com/watch?v={{ movie.trailer }}" target="_blank" class="w-100 mt-auto">
+                                                    <i class="h3 text-danger bi bi-youtube"></i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            {% if not watchlist  %}
+                                                <form action="{% url 'add-to-watchlist' %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                    <button type="submit" class="mt-auto text-dark">
+                                                        <i class="h3 bi bi-plus"></i>
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                {% if movie.id in watchlist %}
+                                                    <form action="{% url 'rm-from-watchlist' %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                        <button type="submit" class="mt-auto text-dark">
+                                                            <i class="h3 text-danger bi bi-eraser"></i>
+                                                        </button>
+                                                    </form> 
+                                                {% else %}
+                                                    <form action="{% url 'add-to-watchlist' %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                        <button type="submit" class="mt-auto text-dark">
+                                                            <i class="h3 bi bi-plus"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if not movie.favourited %}
+                                                <form action="{% url 'favourite' %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                    <button type="submit" class="w-100 mt-auto text-info">
+                                                        <i class="h3 bi bi-balloon-heart"></i>
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                {% if user in movie.favourited.all %}
+                                                    <form action="{% url 'rm-favourite' %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                        <button type="submit" class="w-100 mt-auto text-info">
+                                                            <i class="h3 bi bi-balloon-heart-fill"></i>
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <form action="{% url 'favourite' %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                        <button type="submit" class="w-100 mt-auto text-info">
+                                                            <i class="h3 bi bi-balloon-heart"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            {% endif %} 
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card mt-3 mb-5">
+                    <div class="card-body flex-column align-items-start">
+                        <div class="w-100">
+                            <h2 class="mb-0 text-center card-title">{{ review.title }}</h2>
+                        </div>
+                        <p class="indent my-3 txt-format card-text text-dark">{{ review.body }}</p>
+                        <p class="mb-3"><i class="bi text-warning bi-star-fill"></i> {{ review.rating }}/10</p>
+                        <hr>
+                        <p class="my-3 card-text text-dark"><span class="text-info fw-bold">Tl:DR: </span>{{ review.tldr }}</p>
+                        <small class="text-muted">
+                            Posted by: 
+                            <a class="text-muted" href="{% url 'profile' review.author.username|slugify %}">
+                                <em class="text-info">{{ review.author.username }}</em>
+                            </a>
+                            on {{ review.date_posted|date:"d. F Y." }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

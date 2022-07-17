@@ -1,0 +1,296 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 cols-sm-10 col-md-9 col-lg-7">
+            <div class="card shadow mb-3 mt-3">
+                <img src="https://image.tmdb.org/t/p/original{{ movie_obj.poster_path}}" style="width:100%;height:60vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center border-bottom">
+                        <h5 class=" mb-2 card-title">{{ movie_obj.original_title|title }}</h5>
+                        <div class="row mb-2">
+                            <div style="gap: 0.5rem;" class="col-lg-6 d-flex justify-content-end">
+                                <i class="text-warning bi bi-star-fill"></i>
+                                <span>
+                                    {{ movie_obj.vote_average }}
+                                </span>
+                            </div>
+                            <div style="gap: 0.5rem;" class="col-lg-6 d-flex justify-content-end">
+                                <i class="bi bi-people-fill"></i>
+                                <span>
+                                    {{ movie_obj.vote_count }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-text mt-3">Genre:
+                        {% for genre in movie_obj.genre.all %}
+                            <span class="badge bg-info">{{ genre.name }}</span> 
+                        {% endfor %}
+                    </p>
+                    <p class="card-text my-1">{{ movie_obj.overview }}</p>
+                    <p class="card-text"><small class="text-muted">Release Date: {{ movie_obj.release_date }}</small></p>
+                    <div class="border-top mt-3">
+                        <p class="card-text mt-3">Cast:
+                            {% if movie_obj.actors %}
+                                <span>{{ movie_obj.actors_format }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="border-top mt-3">
+                        <div class="row mt-1">
+                            {% if user.is_authenticated %}
+                                {% if not movie_obj.trailer %}
+                                    <div class="col-3 col-lg-3 d-flex justify-content-center">
+                                        <a href="https://www.google.com/search?q={{ movie_obj.original_title }}" target="_blank" class="mt-auto">
+                                            <i class="h3 bi bi-google"></i>
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="col-3 col-lg-3 d-flex justify-content-center">
+                                        <a href="https://www.youtube.com/watch?v={{ movie_obj.trailer }}" target="_blank" class="mt-auto">
+                                            <i class="h3 text-danger bi bi-youtube"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                <div class="col-3 col-lg-3 d-flex justify-content-center">
+                                    <a href="{% url 'share-your-thoughts' movie_obj.id movie_obj.original_title|slugify %}" class="mt-auto">
+                                        <i class="h3 text-info bi bi-pencil-square"></i>
+                                    </a>
+                                </div>
+                                <div class="col-3 col-lg-3 d-flex justify-content-center">
+                                    {% if not watchlist  %}
+                                        <form action="{% url 'add-to-watchlist' %}" method="POST">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="movie_id" value="{{ movie_obj.id }}">
+                                            <button type="submit" class="mt-auto text-dark">
+                                                <i class="h3 bi bi-plus"></i>
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        {% if movie_obj.id in watchlist %}
+                                            <form action="{% url 'rm-from-watchlist' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="movie_id" value="{{ movie_obj.id }}">
+                                                <button type="submit" class="mt-auto text-dark">
+                                                    <i class="h3 text-danger bi bi-eraser"></i>
+                                                </button>
+                                            </form> 
+                                        {% else %}
+                                            <form action="{% url 'add-to-watchlist' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="movie_id" value="{{ movie_obj.id }}">
+                                                <button type="submit" class="mt-auto text-dark">
+                                                    <i class="h3 bi bi-plus"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-3 col-lg-3 d-flex justify-content-center">
+                                    {% if not movie_obj.favourited %}
+                                        <form action="{% url 'favourite' %}" method="POST">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="movie_id" value="{{ movie_obj.id }}">
+                                            <button type="submit" class="mt-auto text-info">
+                                                <i class="h3 bi bi-balloon-heart"></i>
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        {% if user in movie_obj.favourited.all %}
+                                            <form action="{% url 'rm-favourite' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="movie_id" value="{{ movie_obj.id }}">
+                                                <button type="submit" class="mt-auto text-info">
+                                                    <i class="h3 bi bi-balloon-heart-fill"></i>
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{% url 'favourite' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="movie_id" value="{{ movie_obj.id }}">
+                                                <button type="submit" class="mt-auto text-info">
+                                                    <i class="h3 bi bi-balloon-heart"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %} 
+                                </div>
+                            {% else %}
+                                <div class="col-lg-4">
+                                    <a href="{% url 'index' %}" class="btn btn-outline-info w-100 mt-2">
+                                        <i class="bi bi-house-fill"></i>
+                                        Home
+                                    </a>
+                                </div>
+                                {% if not movie_obj.trailer %}
+                                    <div class="col-lg-4">
+                                        <a href="https://www.google.com/search?q={{ movie_obj.original_title }}" target="_blank" class="btn btn-primary w-100 mt-2">
+                                            <i class="bi bi-google"></i>
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                        <div class="col-lg-4">
+                                            <a href="https://www.youtube.com/watch?v={{ movie_obj.trailer }}" target="_blank" class="btn w-100 btn-danger mt-2">
+                                                <i class="bi bi-youtube"></i>
+                                                Watch the trailer
+                                            </a>
+                                        </div>
+                                {% endif %}
+                                <div class="col-lg-4">
+                                    <a href="https://www.wikipedia.org/wiki/{{ movie_obj.original_title }}" target="_blank" class="btn w-100 btn-outline-primary mt-2">
+                                        Go to Wiki page
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <h5>Reviews <span class="badge bg-dark">{{ reviews|length}}</span></h5>
+            <ul class="list-group mt-3">
+                {% for review in reviews|slice:'3' %}
+                    <li class="list-group-item list-group-item-light flex-column align-items-start">
+                        <div class="d-flex w-100 justify-content-between">
+                            <a href="{% url 'review-detail' review.id review.author.username  movie_obj.original_title|slugify  %}" class="text-dark"><h5 class="mb-0">{{ review.title }}</h5></a>
+                            <span><i class="bi text-warning bi-star-fill"></i> {{ review.rating }}/10</span>
+                        </div>
+                        <small class="text-muted">
+                            Posted by: 
+                            <a class="text-muted" href="{% url 'profile' review.author.username|slugify %}">
+                                <em class="text-info">{{ review.author.username }}</em>
+                            </a>
+                            on {{ review.date_posted|date:"d. F Y." }}
+                        </small>
+                        <p class="mb-1 indent text-dark">{{ review.tldr }}</p>
+                        <a href="{% url 'review-detail' review.id review.author.username  movie_obj.original_title|slugify  %}" class="text-secondary">Read the full review</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if reviews|length > 3 %}
+                <a href="{% url 'reviews' movie_obj.id movie_obj.original_title|slugify %}" class="h6 text-dark mt-3">See all reviews</a>
+            {% endif %}
+        </div>
+    </div>
+    <h3 class="fw-bold text-info mt-5">See also</h3>
+    <div class="row mb-5">
+        {% for movie in similar_movies|slice:":16" %}
+            <div class="col-6 col-lg-3 d-flex justify-content-center align-items-stretch">
+                <div class="card shadow my-3" style="width: 18rem;">
+                    {% if movie.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path}}" style="width:100%;height:30vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center border-bottom">
+                            <div class="mb-2"> 
+                                <i class="text-warning bi bi-star-fill"></i>
+                                <span>{{ movie.vote_average|floatformat }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-people-fill"></i>
+                                <span>
+                                    {{ movie.vote_count }}
+                                </span>
+                            </div>
+                        </div>
+                        <h5 class="mt-2 card-title">
+                        <a class="text-dark" href={% url 'movie-detail' movie.id movie.original_title|slugify %}>    
+                                {{ movie.original_title }}
+                        </a>
+                        </h5>
+                        <p class="card-text mt-auto">
+                            {% for genre in movie.genre.all %}
+                                <span class="badge bg-info">{{ genre.name }}</span>
+                            {% endfor %}
+                        </p>
+                        <p class="mt-auto card-text"><small class="text-muted">Release Date: {{ movie.release_date }}</small></p>
+                    </div>
+                    <div class="card-footer">
+                        {% if not user.is_authenticated %}
+                            <div class="my-2">
+                                {% if not movie.trailer %}
+                                    <div class="col-lg-12">
+                                        <a href="https://www.google.com/search?q={{ movie.original_title }}" target="_blank" class="btn btn-primary w-100 mt-auto">
+                                            Google It
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="col-lg-12">
+                                        <div>
+                                            <a href="https://www.youtube.com/watch?v={{ movie.trailer }}" target="_blank" class="btn btn-danger w-100 mt-auto">
+                                                <i class="text-light bi bi-youtube"></i>
+                                                Trailer
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="container my-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    {% if not movie.trailer %}
+                                        <div>
+                                            <a href="https://www.google.com/search?q={{ movie.original_title }}" target="_blank" class="w-100 mt-auto">
+                                                <i class="h3 bi bi-google"></i>
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div>
+                                            <a href="https://www.youtube.com/watch?v={{ movie.trailer }}" target="_blank" class="w-100 mt-auto">
+                                                <i class="h3 text-danger bi bi-youtube"></i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <form action="{% url 'add-to-watchlist' %}" method="POST">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                            <button type="submit" class="w-100 mt-auto text-dark">
+                                                <i class="h3 bi bi-plus"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        {% if not movie.favourited %}
+                                            <form action="{% url 'favourite' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                <button type="submit" class="w-100 mt-auto text-info">
+                                                    <i class="h3 bi bi-balloon-heart"></i>
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            {% if user in movie.favourited.all %}
+                                                <form action="{% url 'rm-favourite' %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                    <button type="submit" class="w-100 mt-auto text-info">
+                                                        <i class="h3 bi bi-balloon-heart-fill"></i>
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form action="{% url 'favourite' %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                                                    <button type="submit" class="w-100 mt-auto text-info">
+                                                        <i class="h3 bi bi-balloon-heart"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %} 
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <h5 class="mb-5">Need more suggestions? <a href="{% url 'discover-popular' %}" class="text-info text-decoration-underline">Discover movies</a></h5> 
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'movies/base.html' %}
+{% load crispy_forms_tags %}
+{% block nav_link_profile %}active{% endblock nav_link_profile %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-8">
+                <div class="card shadow mb-5 bg-body rounded">
+                    <div class="card-body">
+                        <div class="container">
+                            <form action="{% url 'share-your-thoughts' id movie_title|slugify %}" method="post">
+                                {% csrf_token %}
+                                <div class="border-bottom">
+                                    <h3 style="margin: 0;" class="text-info">{{ movie_title|title }}</h3>
+                                    <small class="text-muted">Review by: {{ request.user.username }}</small>
+                                </div>
+                                <div class="my-3">
+                                    {{ form|crispy }}
+                                </div>
+                                <div class="">
+                                    <button type="submit" value="save" name="save" class="btn btn-info">Submit</button>
+                                    <a class="btn btn-outline-secondary" href="{% url 'movie-detail' id movie_title %}">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+        </div>
+    </div>
+{% endblock %}

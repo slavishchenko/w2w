@@ -1,0 +1,219 @@
+{% extends 'movies/base.html' %}
+{% block nav_link_profile %}active{% endblock nav_link_profile %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-8">
+                <div class="card shadow mb-5 bg-body rounded">
+                    <div class="card-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="media d-flex justify-content-between aligin-items-center">
+                                    <div class="col-3">
+                                        <a href="{{ user.profile.image.url }}" target="_blank">
+                                            <img class="align-self-center rounded rounded-circle" src="{{ user.profile.image.url }}" alt="Profile picture" style="width:80%;height:15vh;">
+                                        </a>
+                                    </div>
+                                    <div class="col-8">
+                                        <div style="height:15vh;" class="media-body d-flex flex-column" id="profileInfo">
+                                            <h4 class="m-0 fw-bold text-info">{{ user.username }}</h4>
+                                            {% if editable %}
+                                                <p class="mt-2 text-secondary">{{ user.email }}</p>
+                                            {% endif %}
+                                            {% if user.profile.about %}
+                                                <p class="card-text mt-auto">{{ user.profile.about }}</p>
+                                            {% endif %}
+                                            <p class="text-secondary mt-auto">Joined: {{ user.date_joined|date:"M d, Y" }}</p>
+                                        </div>
+                                    </div>
+                                    {% if editable %}
+                                        <div>
+                                            <a class="text-info" href="{% url 'settings' user.username %}">
+                                                <i class="bi bi-pencil-fill"></i> 
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5 class="mt-5">Reviews <span class="badge bg-dark">{{ reviews|length}}</span></h5>
+                {% if reviews %}
+                    <ul class="list-group my-3">
+                        {% for review in reviews|slice:'3' %}
+                            <li class="list-group-item list-group-item-light flex-column align-items-start">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <a href="{% url 'review-detail' review.id review.author.username  review.movie.original_title|slugify  %}" class="text-dark"><h5 class="mb-0">{{ review.title }}</h5></a>
+                                    <span><i class="bi text-warning bi-star-fill"></i> {{ review.rating }}/10</span>
+                                </div>
+                                <small class="text-muted">
+                                    Posted by: 
+                                    <a class="text-muted" href="{% url 'profile' review.author.username|slugify %}">
+                                        <em class="text-info">{{ review.author.username }}</em>
+                                    </a>
+                                    on {{ review.date_posted|date:"d. F Y." }}
+                                </small>
+                                <p class="mb-1 indent text-dark">{{ review.tldr }}</p>
+                                <a href="{% url 'review-detail' review.id review.author.username  review.movie.original_title|slugify  %}" class="text-secondary">Read the full review</a>
+                            </li>
+                        {% endfor %}
+                        <div id="hidden">
+                            {% for review in reviews|slice:'3:' %}
+                                <li class="list-group-item list-group-item-light flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <a href="{% url 'review-detail' review.id review.author.username  review.movie.original_title|slugify  %}" class="text-dark"><h5 class="mb-0">{{ review.title }}</h5></a>
+                                        <span><i class="bi text-warning bi-star-fill"></i> {{ review.rating }}/10</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        Posted by: 
+                                        <a class="text-muted" href="{% url 'profile' review.author.username|slugify %}">
+                                            <em class="text-info">{{ review.author.username }}</em>
+                                        </a>
+                                        on {{ review.date_posted|date:"d. F Y." }}
+                                    </small>
+                                    <p class="mb-1 indent text-dark">{{ review.tldr }}</p>
+                                    <a href="{% url 'review-detail' review.id review.author.username  review.movie.original_title|slugify  %}" class="text-secondary">Read the full review</a>
+                                </li>
+                            {% endfor %} 
+                        </div>
+                        {% if reviews|length > 3 %}
+                            <button class="mt-1" onclick="toggleElems(this, 'hidden')" id="myBtn">See all reviews...</button>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+                <h5 class="mt-5">Favourite movies <span class="badge bg-dark">{{ favourites|length }}</span></h5>
+                <div class="row">
+                    {% for movie in favourites|slice:'8' %}
+                        <div class="col-6 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center align-items-stretch">
+                            <div class="card shadow my-3" style="width: 18rem;">
+                                {% if movie.poster_path %}
+                                    <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path }}" style="width:100%;height:25vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom">
+                                        <div class="mb-2"> 
+                                            <i class="text-warning bi bi-star-fill"></i>
+                                            <span>{{ movie.vote_average|floatformat }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="bi bi-people-fill"></i>
+                                            <span>
+                                                {{ movie.vote_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <h5 class="mt-2 card-title">
+                                        <a class="text-dark" href={% url 'movie-detail' movie.id movie.original_title|slugify %}>
+                                            {{ movie.original_title }}
+                                        </a>    
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %} 
+                </div>
+                <div class="row" id="moreMovies">
+                    {% for movie in favourites|slice:'8:' %}
+                        <div class="col-6 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center align-items-stretch">
+                            <div class="card shadow my-3" style="width: 18rem;">
+                                {% if movie.poster_path %}
+                                    <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path }}" style="width:100%;height:25vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom">
+                                        <div class="mb-2"> 
+                                            <i class="text-warning bi bi-star-fill"></i>
+                                            <span>{{ movie.vote_average|floatformat }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="bi bi-people-fill"></i>
+                                            <span>
+                                                {{ movie.vote_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <h5 class="mt-2 card-title">
+                                        <a class="text-dark" href={% url 'movie-detail' movie.id movie.original_title|slugify %}>
+                                            {{ movie.original_title }}
+                                        </a>    
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>    
+                    {% endfor %}
+                </div>
+                {% if favourites|length > 8 %}
+                    <button class="mt-1" onclick="toggleMovies(this, 'moreMovies')" id="difBtn">See all favourites...</button>
+                {% endif %}
+                <h5 class="mt-5">Watchlist <span class="badge bg-dark">{{ watchlist|length}}</span></h5>
+                <div class="row">
+                    {% for movie in watchlist|slice:'8' %}
+                        <div class="col-6 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center align-items-stretch">
+                            <div class="card shadow my-3" style="width: 18rem;">
+                                {% if movie.poster_path %}
+                                    <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path }}" style="width:100%;height:25vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom">
+                                        <div class="mb-2"> 
+                                            <i class="text-warning bi bi-star-fill"></i>
+                                            <span>{{ movie.vote_average|floatformat }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="bi bi-people-fill"></i>
+                                            <span>
+                                                {{ movie.vote_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <h5 class="mt-2 card-title">
+                                        <a class="text-dark" href={% url 'movie-detail' movie.id movie.original_title|slugify %}>
+                                            {{ movie.original_title }}
+                                        </a>    
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %} 
+                </div>
+                <div class="row" id="fullWatchlist">
+                    {% for movie in watchlist|slice:'8:' %}
+                        <div class="col-6 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center align-items-stretch">
+                            <div class="card shadow my-3" style="width: 18rem;">
+                                {% if movie.poster_path %}
+                                    <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path }}" style="width:100%;height:25vh;" class="img-fluid card-img-top" alt="Movie Poster">
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom">
+                                        <div class="mb-2"> 
+                                            <i class="text-warning bi bi-star-fill"></i>
+                                            <span>{{ movie.vote_average|floatformat }}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="bi bi-people-fill"></i>
+                                            <span>
+                                                {{ movie.vote_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <h5 class="mt-2 card-title">
+                                        <a class="text-dark" href={% url 'movie-detail' movie.id movie.original_title|slugify %}>
+                                            {{ movie.original_title }}
+                                        </a>    
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>    
+                    {% endfor %}
+                </div>
+                {% if watchlist|length > 8 %}
+                    <button class="mt-1 mb-5" onclick="toggleWatchlist(this, 'fullWatchlist')">See full watchlist...</button>
+                {% endif %}    
+            </div>  
+        </div>
+    </div>
+{% endblock %}
+
+
+
