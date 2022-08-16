@@ -1,4 +1,4 @@
-__W2W__ is a Django application that allows users to discover movies - __that are worth watching__ - quickly and easily.<br>
+Django application that allows users to discover movies - __that are worth watching__ - quickly and easily.<br>
 
 ____
 
